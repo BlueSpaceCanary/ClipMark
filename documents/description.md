@@ -37,11 +37,11 @@ track of who had offended whom in *Emma*).
 
 ## Language domain
 
-[See Motivation section][#motivation]
+[See Motivation section](#motivation)
 
 ## Language design
 
-[See Project section][#project]
+[See Project section](#project)
 
 ## Example computations
 {{
