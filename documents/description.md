@@ -41,7 +41,7 @@ track of who had offended whom in *Emma*).
 
 ## Language design
 
-[See Project section](#project)
+[See Project section](#project-description-and-plan)
 
 ## Example computations
 {{
