@@ -1,0 +1,5 @@
+# Eclipse and SBT nonsense
+.project
+.cache
+.classpath
+target/
