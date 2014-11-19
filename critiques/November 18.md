@@ -24,3 +24,14 @@ Regarding the "{{ }}" syntax that Christine mentioned, I am also a little unclea
 If so, I am unclear about how you would differentiate about information that should be attached to the scene, location, or character. It looks, however, that you may have simplified the syntax since you wrote this example, but I couldn't quite tell from your descriptions or your code. In particular, I am not sure if you are still looking at making nested definitions and scenes or info tags with multiple labels inside. It may help us if you would give us a couple of example programs in your new syntax (if these already exist, I applogize but I could not find them).
 
 -- Nick Carter
+
+Phil and I had a discussion offline to clarify some of this. It sounds like he is planning to support `{{ blah @@character@@ blah }}`, `{{ blah %%location%% blah }}`, and `{{blah}}` in that order (i.e. a character will get the info if found, if not then a location will be searched for, and if that is not found then it will be attached to the scene. I have a few comments now.
+
+1. Why not support multiple locations and or characters within an "info"? Or, relatedly, shouldn't there be a way to tag an "info" to a location or character when the location or character does not appear in the `{{}}`? It seems like this could be easily accomplished with limited additional syntax and may provide significant additional flexibility.
+2. Why is a location not surrounded by `@` signs? They, to me, mean "at" which is much more like a location than a percent. 
+3. Why require two symbols? It seems like it would be easier on the writer to use one symbol and, since you are concerned with interfering with already used symbols, simply allow users to escape the special characters. The symbols you are using are rare enough in english that this would seem preferable. Similarly, how about switching scene and info declarations? Scenes I would assume happen less frequently than infos.
+
+
+Further, it is unclear to me how often you are thinking that someone will make use of the features of this language in writing. Are infos a common occurrence or are they relatively rare? Does a digest look like a synopses?
+
+-- Nick Carter
