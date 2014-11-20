@@ -3,3 +3,7 @@
 .cache
 .classpath
 target/
+
+# Ensime nonsense
+.ensime
+.ensime_cache/
