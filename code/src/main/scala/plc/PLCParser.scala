@@ -109,7 +109,8 @@ object PLCParser extends JavaTokenParsers with PackratParsers with InfoParser {
 	 *       scene location
 	 */
 	lazy val scene: Parser[Scene] = {
-	  sceneOpen~"""\s*""".r~>sceneContents<~"""\s*""".r~sceneClose ^^ {case scn => Scene(scn._2.headOption.getOrElse(Location()), scn._1, scn._3)}  
+	  sceneOpen~"""\s*""".r~>sceneContents<~"""\s*""".r~sceneClose ^^ {case scn => 
+	    Scene(scn._2.headOption.getOrElse(Location()), scn._1, collection.mutable.Set.empty ++ scn._3)}  
 	}
 	
 	lazy val doc: PackratParser[MD] = { (
