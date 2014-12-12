@@ -50,6 +50,46 @@ case class Appendix(scenes: collection.mutable.ListBuffer[Scene] = collection.mu
     locs -= loc
     return this
   }
+  
+  override def toString: String = {
+    var outString = "\nScenes: \n"
+      
+    for(i <- 0 to scenes.length - 1) {
+      outString += "\t Scene #" + i
+      val scene = scenes(i)
+      outString += "\n\t\tLocation: " + scene.place
+      outString += "\n + \t\t Characters in scene: "
+      scene.characters.foreach({case char => {
+        outString += "\n\t\t\t" + char.name
+      }})
+      
+      outString += "\n\t\tKey info: "
+      scene.info.foreach({case info => {
+        outString += "\n\t\t\t" + info.content 
+      }})
+    }
+    
+    outString += "\nCharacters: "
+    chars.foreach{case char => {
+      outString += "\n\t" + char.name
+      outString += "\n\tKey info: "
+      char.info.foreach{case info => {
+        outString += "\n\t\t" + info.content
+      }}
+    }}
+    
+    outString += "\nLocations: " 
+    
+    locs.foreach{case loc => {
+      outString += "\n\t" + loc.name
+      outString += "\n\tKey info: "
+      loc.info.foreach{case info => {
+        outString += "\n\t\t" + info.content
+      }}
+    }}
+    
+    return outString
+  }
 } 
                     
                      
