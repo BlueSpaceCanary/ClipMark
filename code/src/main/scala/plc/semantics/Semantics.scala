@@ -40,7 +40,7 @@ class Semantics(input: AST) {
 		    }
 		  })
 	  })
-	  //println(updatedApp.locs)
+
 	  app.locs.foreach{case loc: Location => {
 	    println("******" + loc)
 	    println("xxxxxxx" + app.locs)
@@ -54,7 +54,6 @@ class Semantics(input: AST) {
 	    })
 	  }}
 	    
-	  //println(updatedApp.locs)
 	  return updatedApp 
 	}
 	
