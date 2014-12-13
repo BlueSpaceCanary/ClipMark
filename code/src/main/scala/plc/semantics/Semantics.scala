@@ -28,7 +28,7 @@ class Semantics(input: AST) {
 	 * Also links scenes and characters
 	 */
 	def pass2(app: Appendix): Appendix = {
-	  val updatedApp = app.copy()
+	  val updatedApp = Appendix(app)
 	  app.chars.foreach(char => {
 		  app.scenes.foreach(scene =>{
 		    if(scene.characters.contains(char)) {
@@ -40,19 +40,21 @@ class Semantics(input: AST) {
 		    }
 		  })
 	  })
-	  
-	  app.locs.foreach(loc => {
+	  //println(updatedApp.locs)
+	  app.locs.foreach{case loc: Location => {
+	    println("******" + loc)
+	    println("xxxxxxx" + app.locs)
 	    app.scenes.foreach(scene => {
-	    	if(scene.place == loc) {
+	    	if(scene.place == loc && scene.place.name != "") {
 	    	  updatedApp -= loc
 	    	  updatedApp += loc.copy(scenes = loc.scenes + scene, 
 	    	        				 visitors = loc.visitors ++ scene.characters,
-	    	        				 info = loc.info ++ scene.info.filter(_.target.name == loc.name))
+	    	        				 info = loc.info ++ (scene.info.filter(_.target.name == loc.name)))
 	    	}
 	    })
-	  })
+	  }}
 	    
-	  
+	  //println(updatedApp.locs)
 	  return updatedApp 
 	}
 	

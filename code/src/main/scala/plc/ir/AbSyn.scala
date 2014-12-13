@@ -29,6 +29,7 @@ case class Character(name: String = "",
 case class Appendix(scenes: collection.mutable.ListBuffer[Scene] = collection.mutable.ListBuffer.empty, 
                     chars: collection.mutable.Set[Character] = collection.mutable.Set.empty, 
                     locs: collection.mutable.Set[Location] = collection.mutable.Set.empty) {
+  
   /**
    * These make our second pass in our semantics SO MUCH cleaner.
    */
@@ -56,7 +57,7 @@ case class Appendix(scenes: collection.mutable.ListBuffer[Scene] = collection.mu
     var outString = "\nScenes: \n"
       
     for(i <- 0 to scenes.length - 1) {
-      outString += "\t Scene #" + i
+      outString += "\n\n\t Scene #" + i
       val scene = scenes(i)
       outString += "\n\t\tLocation: " + scene.place.name
       outString += "\n\t\t Characters in scene: "
@@ -70,19 +71,19 @@ case class Appendix(scenes: collection.mutable.ListBuffer[Scene] = collection.mu
       }})
     }
     
-    outString += "\nCharacters: "
+    outString += "\n\nCharacters: "
     chars.foreach{case char => {
-      outString += "\n\t" + char.name
+      outString += "\n\n\t" + char.name
       outString += "\n\tKey info: "
       char.info.foreach{case info => {
         outString += "\n\t\t" + info.content
       }}
     }}
     
-    outString += "\nLocations: " 
+    outString += "\n\nLocations: " 
     
     locs.foreach{case loc => {
-      outString += "\n\t" + loc.name
+      outString += "\n\n\t" + loc.name
       outString += "\n\tKey info: "
       loc.info.foreach{case info => {
         outString += "\n\t\t" + info.content
@@ -92,5 +93,13 @@ case class Appendix(scenes: collection.mutable.ListBuffer[Scene] = collection.mu
     return outString
   }
 } 
+
+object Appendix {
+  def apply(oldApp: Appendix): Appendix = {
+   	new Appendix(oldApp.scenes.to[collection.mutable.ListBuffer],
+   	             oldApp.chars.to[collection.mutable.Set],
+   	             oldApp.locs.to[collection.mutable.Set])	
+  }
+}
                     
                      
