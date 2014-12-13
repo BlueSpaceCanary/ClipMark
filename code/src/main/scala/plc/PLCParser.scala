@@ -58,12 +58,7 @@ trait InfoParser extends ElementParser {
         (str + rest._1, rest._2, rest._3 )}}
       | whitespaceMatcher ~ infoContent ^^ {case wspc ~ rest => (wspc + rest._1, rest._2, rest._3)}
     )}
-  /**
-   *  TODO: Currently just spits back a blank element on failing to find a loc/char.
-   *  This is the wrong thing to do. Really we want to return an Option[Element]
-   *  TODO: Also we're throwing out the info right now as noted below. Oops.
-   */
-  
+ 
   lazy val infoTag: PackratParser[PlaceholderElement] = {(
 		  infoTagOpen ~ whitespaceMatcher ~> name <~ whitespaceMatcher ~infoTagClose ^^ {case name => PlaceholderElement(name)}
 		  | infoTagOpen ~ whitespaceMatcher ~ infoTagClose ^^ {case _ => PlaceholderElement("")}
