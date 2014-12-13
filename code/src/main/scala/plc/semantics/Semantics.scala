@@ -1,8 +1,11 @@
 package plc.semantics
 
 import plc.ir._
+import scala.io.Source
 
-class Semantics {
+class Semantics(input: AST) {
+  val output = pass3(pass2(pass1(input)))
+  
 	def pass1(ast: AST): Appendix = ast match {
 	  case scene: Scene => {
 	    Appendix(collection.mutable.ListBuffer(scene), collection.mutable.Set() ++ scene.characters, collection.mutable.Set(scene.place))
@@ -63,4 +66,19 @@ class Semantics {
 	  })
 	  return updatedApp
 	}
+}
+
+object Semantics {
+  def apply(input: AST) = new Semantics(input)
+}
+object Runner extends App {
+  val inputFile = Source.fromFile(args(0)).mkString
+  val parsed = plc.PLCParser(inputFile)
+  
+  try {
+    val parsedValue = parsed.get
+      println(Semantics(parsedValue).output.toString)
+  } catch {
+    case e: NoSuchElementException => throw new Exception("Failed to parse")
+  }
 }

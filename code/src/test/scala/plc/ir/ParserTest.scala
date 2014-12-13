@@ -65,7 +65,7 @@ class FullParserTest extends FunSpec with LangParseMatchers[MD] with TestValues 
       
       // Just info
       program(scene(info(tagged=placeHolderName1))) should parseAs(
-          Scene( info = Set( Info( PlaceholderElement( placeHolderName1) ) ) )
+          Scene( info = collection.mutable.Set( Info( PlaceholderElement( placeHolderName1) ) ) )
       )
       
       
@@ -73,9 +73,8 @@ class FullParserTest extends FunSpec with LangParseMatchers[MD] with TestValues 
          info(placeHolderInfo1.content,placeHolderInfo1.target.name) + " " + 
          info(placeHolderInfo2.content, placeHolderInfo2.target.name)
       )) should parseAs(
-         Scene(info=Set(placeHolderInfo1, placeHolderInfo2))
+         Scene(info=collection.mutable.Set(placeHolderInfo1, placeHolderInfo2))
       )
-      
       
       // Character embedded in info    
       program(scene(
@@ -83,7 +82,7 @@ class FullParserTest extends FunSpec with LangParseMatchers[MD] with TestValues 
       )) should parseAs(
           Scene(
               characters=Set(baseCharacter1),
-              info=Set(infoWithChar1)
+              info=collection.mutable.Set(infoWithChar1)
           )
       )  
       
@@ -94,7 +93,7 @@ class FullParserTest extends FunSpec with LangParseMatchers[MD] with TestValues 
       )) should parseAs(
           Scene(
               characters=Set(baseCharacter1, baseCharacter2),
-              info=Set(infoWithChar1)
+              info=collection.mutable.Set(infoWithChar1)
           )
       )  
       
@@ -102,6 +101,9 @@ class FullParserTest extends FunSpec with LangParseMatchers[MD] with TestValues 
       // product so we're white-box testing and happen to know that the Location 
       // implementation is essentially identical to the character impl.      
       program(scene(location)) should parseAs(Scene(place=baseLoc1))
+    }
+    it("can be multiple scenes") {
+       program("   " + scene(placeHolderText) + " " + scene(placeHolderText)) should parseAs(Story(Scene(), Scene()))
     }
   }
 }

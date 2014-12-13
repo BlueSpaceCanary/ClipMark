@@ -8,6 +8,11 @@ trait ElementParser extends JavaTokenParsers with PackratParsers {
   override val skipWhitespace = true
   lazy val charBoundary: Parser[String] = literal("@@")
   lazy val locBoundary: Parser[String] = literal("%%")
+  lazy val whitespaceMatcher: Parser[String] = (
+      """( |\t|\n|\r)*""".r
+  )
+  
+  lazy val notSpecialCharacter: Parser[String] = """((?!@@%%).)*""".r
   
   /**
    * TODO: right now we only allow alphabetic characters, space, ', and - in
@@ -15,18 +20,15 @@ trait ElementParser extends JavaTokenParsers with PackratParsers {
    */
   lazy val name: Parser[String] = """[a-zA-Z\- ']+""".r 
   lazy val character: PackratParser[Character] = 
-    charBoundary~"""\s*""".r~>name<~"""\s*""".r~charBoundary ^^ {case aName => Character(name=aName)}
+    charBoundary~whitespaceMatcher~>name<~whitespaceMatcher~charBoundary ^^ {case aName => Character(name=aName)}
   lazy val location: PackratParser[Location] = 
-    locBoundary~"""\s*""".r~>name<~"""\s*""".r~locBoundary ^^ {case aName => Location(name=aName)}
+    locBoundary~whitespaceMatcher~>name<~whitespaceMatcher~locBoundary ^^ {case aName => Location(name=aName)}
   
   lazy val el: PackratParser[Element] = (
 	character | location
   )
 }
 
-/**
- * TODO: At the moment, this discards info.
- */
 trait InfoParser extends ElementParser {
   override val skipWhitespace = false	
   lazy val infoTagOpen: Parser[String] = literal("[[")
@@ -34,6 +36,8 @@ trait InfoParser extends ElementParser {
   
   lazy val infoContentOpen: Parser[String] = literal("((")
   lazy val infoContentClose: Parser[String] = literal("))")
+  
+	override lazy val notSpecialCharacter: Parser[String] = """((?!\(\(|\)\)|@@|%%|\[\[|\]\]).)+?""".r
   
   /**
    * Eat up text when there's nothing in our info block 
@@ -44,14 +48,15 @@ trait InfoParser extends ElementParser {
    */
   lazy val infoContent: Parser[(String, Set[Character], Set[Location])] = {
     (
-      infoContentOpen ~ """\s*""".r ~> infoContent
-      | character ~ infoContent ^^ {case character ~ rest => 
-        (character.name + rest._1, rest._2 + character, rest._3)}
-      | location ~ infoContent ^^ {case location ~ rest => 
-        (location.name + rest._1, rest._2, rest._3 + location)}
-      | """\s*""".r ~ infoContentClose ^^ {case _ => ("",Set.empty[Character], Set.empty[Location])}
-      | not(infoContentClose) ~ """.""".r ~ infoContent ^^ {case _ ~ char ~ rest => 
-        (char + rest._1, rest._2, rest._3 )}
+      infoContentOpen ~ whitespaceMatcher ~> infoContent
+      | character ~ infoContent ^^ {case character ~ rest => {
+        (character.name + rest._1, rest._2 + character, rest._3)}}
+      | location ~ infoContent ^^ {case location ~ rest => {
+        (location.name + rest._1, rest._2, rest._3 + location)}}
+      | whitespaceMatcher ~ infoContentClose ^^ {case _ =>{("",Set.empty[Character], Set.empty[Location])}}
+      | notSpecialCharacter ~ infoContent ^^ {case str ~ rest => {
+        (str + rest._1, rest._2, rest._3 )}}
+      | whitespaceMatcher ~ infoContent ^^ {case wspc ~ rest => (wspc + rest._1, rest._2, rest._3)}
     )}
   /**
    *  TODO: Currently just spits back a blank element on failing to find a loc/char.
@@ -60,7 +65,7 @@ trait InfoParser extends ElementParser {
    */
   
   lazy val infoTag: PackratParser[PlaceholderElement] = {(
-		  infoTagOpen ~ """\s*""".r ~> name <~ """\s*""".r ~infoTagClose ^^ {case name => PlaceholderElement(name)}
+		  infoTagOpen ~ whitespaceMatcher ~> name <~ whitespaceMatcher ~infoTagClose ^^ {case name => PlaceholderElement(name)}
   )}
 
   /**
@@ -84,19 +89,32 @@ trait InfoParser extends ElementParser {
 object PLCParser extends JavaTokenParsers with PackratParsers with InfoParser {
 	def apply(s: String): ParseResult[MD] = parseAll(doc, s)
 	
+	/**
+	 * Horrible evil regex to match any string without special chars. I hate 
+	 * parsers.
+	 * 
+	 * Basically, here's what it does: First, grab as many characters without
+	 * special meaning in the markdown language as it can. Then, backtrack off
+	 * any trailing whitespace it sucked up. We don't worry about leading 
+	 * whitespace because it's generally taken care of for us elsewhere. 
+	 */
+	override lazy val notSpecialCharacter: Parser[String] = 
+	  """((?!\(\(|\)\)|\{\{|\}\}|@@|%%|\[\[|\]\]).)*((?!\(\(|\)\)|\{\{|\}\}|@@|%%|\[\[|\]\]| |\n|\t|\n\r|\r\n).)+""".r
+	
 	/*
 	 *  Interesting type inference note: these parsers break *badly* if type isn't 
 	 *  specified very precisely. So, when I used Set.empty instead of 
 	 *  Set.empty[Location], and the type inferred was _<:Set[Location], typechecking failed.
 	 */
-	lazy val sceneContents: PackratParser[(Set[Character], Set[Location], Set[Info])] = { ( 
-	  character ~ sceneContents ^^ {case char ~ rest => (rest._1 + char, rest._2, rest._3)}
-	  | location ~ sceneContents ^^ {case loc ~ rest => (rest._1,  rest._2 + loc, rest._3)}
-	  | info ~ sceneContents ^^ {case info ~ rest => (rest._1 ++ info._2, rest._2 ++ info._3, rest._3 + info._1)}
-	  | character ^^ {case char => (Set(char), Set.empty[Location], Set.empty[Info])}
-	  | location ^^ {case loc => (Set.empty[Character], Set(loc), Set.empty[Info])}
-	  | info ^^ {case info => (info._2, info._3, Set(info._1))}
-	  | not(sceneClose) ~ """.""".r ~> sceneContents 
+	lazy val sceneContents: PackratParser[(Set[Character], Set[Location], Set[Info])] = {(
+	  character ~ sceneContents ^^ {case char ~ rest => {(rest._1 + char, rest._2, rest._3)}}
+	  | location ~ sceneContents ^^ {case loc ~ rest => {(rest._1,  rest._2 + loc, rest._3)}}
+	  | info ~ sceneContents ^^ {case info ~ rest =>{(rest._1 ++ info._2, rest._2 ++ info._3, rest._3 + info._1)}}
+	  | character ^^ {case char =>{(Set(char), Set.empty[Location], Set.empty[Info])}}
+	  | location ^^ {case loc => {(Set.empty[Character], Set(loc), Set.empty[Info])}}
+	  | info ^^ {case info => {(info._2, info._3, Set(info._1))}}
+	  | notSpecialCharacter ~> sceneContents ^^ {case scn => {scn}}
+	  | whitespaceMatcher ~> sceneContents ^^ {case scn => {scn}}
 	  | success((Set.empty[Character], Set.empty[Location], Set.empty[Info]))
 	)}
 	
@@ -108,14 +126,15 @@ object PLCParser extends JavaTokenParsers with PackratParsers with InfoParser {
 	 *       ungodly-difficult to do as I have things currently specified. Also, assumes first location seen is
 	 *       scene location
 	 */
-	lazy val scene: Parser[Scene] = {
-	  sceneOpen~"""\s*""".r~>sceneContents<~"""\s*""".r~sceneClose ^^ {case scn => 
-	    Scene(scn._2.headOption.getOrElse(Location()), scn._1, collection.mutable.Set.empty ++ scn._3)}  
-	}
+	lazy val scene: Parser[Scene] = (
+	  sceneOpen ~ whitespaceMatcher ~> sceneContents <~ whitespaceMatcher ~ sceneClose ^^ {case scn => 
+	    Scene(scn._2.headOption.getOrElse(Location()), scn._1, collection.mutable.Set.empty ++ scn._3)}
+	  | not(sceneOpen) ~ """.""".r ~> scene 
+	)
 	
 	lazy val doc: PackratParser[MD] = { (
-	    scene~"""\s*""".r ~doc ^^ {case sc~_~rest => Story(sc, rest)}
-	    | scene
+	    whitespaceMatcher ~> scene ~ whitespaceMatcher ~ doc ^^ {case sc~_~rest => Story(sc, rest)}
+	    | whitespaceMatcher ~> scene <~ whitespaceMatcher
 	)}
 } 
 
