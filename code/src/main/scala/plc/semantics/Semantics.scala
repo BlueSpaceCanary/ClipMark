@@ -6,6 +6,9 @@ import scala.io.Source
 class Semantics(input: AST) {
   val output = pass3(pass2(pass1(input)))
   
+    /**
+     * Initial conversion from AST to Appendix
+     */
 	def pass1(ast: AST): Appendix = ast match {
 	  case scene: Scene => {
 	    Appendix(collection.mutable.ListBuffer(scene), collection.mutable.Set() ++ scene.characters, collection.mutable.Set(scene.place))
@@ -58,7 +61,8 @@ class Semantics(input: AST) {
 	}
 	
 	/**
-	 * Links info not tied to a char or loc to the scenes instead
+	 * Links info not tied to a char or loc to the scenes instead, then cleans
+	 * out char and loc associated info from the scene
 	 */
 	def pass3(app: Appendix): Appendix = {
 	  val updatedApp = app.copy()
@@ -72,6 +76,8 @@ class Semantics(input: AST) {
 object Semantics {
   def apply(input: AST) = new Semantics(input)
 }
+
+
 object Runner extends App {
   val inputFile = Source.fromFile(args(0)).mkString
   val parsed = plc.PLCParser(inputFile)

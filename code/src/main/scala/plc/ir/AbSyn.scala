@@ -10,8 +10,17 @@ case class Story(scene: Scene, rest: MD) extends MD
 case class Scene(place: Location = Location(),
                  characters: Set[Character] = Set.empty,
                  info: collection.mutable.Set[Info] = collection.mutable.Set.empty) extends MD
-                 
+
+/**
+ * Element itself is abstract, because you can't extend a case class. So, we need
+ * a new type that can be used in the IR in info block target tagging, where we don't
+ * actually know the type of the tagged thing.
+ * 
+ * TODO: the right way to do this is to just require @@ or %% tagging in the info
+ * target tag, probably.
+ */
 case class PlaceholderElement(name: String = "")
+
 case class Info(target: PlaceholderElement = PlaceholderElement(), content: String = "")
                  
 case class Location(name: String = "",
