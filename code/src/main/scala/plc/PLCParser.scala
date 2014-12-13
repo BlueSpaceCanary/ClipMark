@@ -6,8 +6,8 @@ import plc.ir._
 
 trait ElementParser extends JavaTokenParsers with PackratParsers {
   override val skipWhitespace = true
-  lazy val charBoundary: Parser[String] = literal("@@")
-  lazy val locBoundary: Parser[String] = literal("%%")
+  lazy val charBoundary: Parser[String] = literal("%%")
+  lazy val locBoundary: Parser[String] = literal("@@")
   lazy val whitespaceMatcher: Parser[String] = (
       """( |\t|\n|\r)*""".r
   )
@@ -66,6 +66,7 @@ trait InfoParser extends ElementParser {
   
   lazy val infoTag: PackratParser[PlaceholderElement] = {(
 		  infoTagOpen ~ whitespaceMatcher ~> name <~ whitespaceMatcher ~infoTagClose ^^ {case name => PlaceholderElement(name)}
+		  | infoTagOpen ~ whitespaceMatcher ~ infoTagClose ^^ {case _ => PlaceholderElement("")}
   )}
 
   /**

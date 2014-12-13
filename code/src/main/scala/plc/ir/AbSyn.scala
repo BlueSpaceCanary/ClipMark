@@ -47,18 +47,19 @@ case class Appendix(scenes: collection.mutable.ListBuffer[Scene] = collection.mu
   }
   
   def +=(loc: Location): Appendix = {
-    locs -= loc
+    locs += loc
     return this
   }
   
+  // TODO: Printing key info should convert newlines to spaces.
   override def toString: String = {
     var outString = "\nScenes: \n"
       
     for(i <- 0 to scenes.length - 1) {
       outString += "\t Scene #" + i
       val scene = scenes(i)
-      outString += "\n\t\tLocation: " + scene.place
-      outString += "\n + \t\t Characters in scene: "
+      outString += "\n\t\tLocation: " + scene.place.name
+      outString += "\n\t\t Characters in scene: "
       scene.characters.foreach({case char => {
         outString += "\n\t\t\t" + char.name
       }})

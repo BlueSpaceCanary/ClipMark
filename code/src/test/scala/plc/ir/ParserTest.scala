@@ -14,8 +14,8 @@ trait TestValues {
   val placeHolderName1 = "foo bar"
   val placeHolderName2 = "zip zoom"
     
-  def character1 = "@@" + placeHolderName1 + "@@"
-  def character2 = "@@" + placeHolderName2 + "@@"
+  def character1 = "%%" + placeHolderName1 + "%%"
+  def character2 = "%%" + placeHolderName2 + "%%"
     
   val placeHolderInfo1 = Info(PlaceholderElement(placeHolderName1), placeHolderText)
   val placeHolderInfo2 = Info(PlaceholderElement(placeHolderName2), placeHolderText)
@@ -29,7 +29,7 @@ trait TestValues {
   
 
   def info(contained: String = "", tagged: String = "") = "[[ " + tagged + "]]((" + contained + " " + " ))"
-  def location = "%%" + placeHolderName1 + "%%"
+  def location = "@@" + placeHolderName1 + "@@"
   def scene(contained: String = "") = "{{ " + contained + " }}"
 }
 	
